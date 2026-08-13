@@ -1,0 +1,9 @@
+# Normalize line endings so the repo stays consistent between Windows and the
+# Linux machines Vercel builds on. Stops "whole file changed" diffs.
+* text=auto eol=lf
+
+# Binary — never try to normalize these.
+*.xlsx binary
+*.png binary
+*.jpg binary
+*.ico binary

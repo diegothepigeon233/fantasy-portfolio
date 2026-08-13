@@ -1,0 +1,86 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { getLeagues, getSeasons, percentile, commas, type League, type Season } from '../../lib/data';
+
+// One page per row of the `leagues` sheet, generated at build time.
+export async function getStaticPaths() {
+  const [leagues, seasons] = await Promise.all([getLeagues(), getSeasons()]);
+  return leagues.map((league) => ({
+    params: { slug: league.slug },
+    props: { league, rows: seasons.filter((s) => s.league === league.slug) },
+  }));
+}
+
+const { league, rows } = Astro.props as { league: League; rows: Season[] };
+---
+
+<Layout title={`${league.name} — Fantasy Portfolio`}>
+  <a href="/" class="text-sm text-muted transition hover:text-slate-100">&larr; All leagues</a>
+
+  <header class="mt-6 mb-10 border-b border-edge pb-8">
+    <div class="flex items-center gap-3">
+      <span class="h-3 w-3 rounded-full" style={`background:${league.accent}`} aria-hidden="true" />
+      <span class="text-xs tracking-widest text-muted uppercase">{league.sport}</span>
+    </div>
+    <h1 class="mt-3 text-4xl font-bold tracking-tight">{league.name}</h1>
+    {league.blurb && <p class="mt-3 max-w-2xl text-muted">{league.blurb}</p>}
+  </header>
+
+  {
+    rows.length === 0 ? (
+      <p class="text-muted">
+        No seasons recorded yet. Add rows to the <code class="text-sky-400">seasons</code> sheet
+        with <code class="text-sky-400">league = {league.slug}</code>.
+      </p>
+    ) : (
+      <div class="space-y-4">
+        {rows.map((s) => (
+          <article class="rounded-2xl border border-edge bg-panel p-6">
+            <div class="flex flex-wrap items-baseline justify-between gap-3">
+              <div>
+                <h2 class="text-xl font-semibold">{s.season}</h2>
+                {s.teamName && <p class="text-sm text-muted">{s.teamName}</p>}
+              </div>
+              {s.result && (
+                <span
+                  class={`rounded-full px-3 py-1 text-xs font-semibold ${
+                    s.highlight ? 'bg-sky-400/15 text-sky-300' : 'bg-slate-100/5 text-slate-300'
+                  }`}
+                >
+                  {s.result}
+                </span>
+              )}
+            </div>
+
+            <dl class="mt-5 grid grid-cols-2 gap-4 sm:grid-cols-4">
+              <div>
+                <dt class="text-xs text-muted uppercase">Points</dt>
+                <dd class="mt-1 text-lg font-semibold tabular-nums">{commas(s.points)}</dd>
+              </div>
+              <div>
+                <dt class="text-xs text-muted uppercase">Overall rank</dt>
+                <dd class="mt-1 text-lg font-semibold tabular-nums">{commas(s.overallRank)}</dd>
+              </div>
+              <div>
+                <dt class="text-xs text-muted uppercase">Percentile</dt>
+                <dd class="mt-1 text-lg font-semibold">{percentile(s) ?? '—'}</dd>
+              </div>
+              <div>
+                <dt class="text-xs text-muted uppercase">{s.miniLeague || 'Mini-league'}</dt>
+                <dd class="mt-1 text-lg font-semibold tabular-nums">
+                  {s.miniLeagueRank
+                    ? `${s.miniLeagueRank}${s.miniLeagueSize ? ` / ${s.miniLeagueSize}` : ''}`
+                    : '—'}
+                </dd>
+              </div>
+            </dl>
+
+            {s.notes && (
+              <p class="mt-5 border-t border-edge pt-4 text-sm text-slate-300">{s.notes}</p>
+            )}
+          </article>
+        ))}
+      </div>
+    )
+  }
+</Layout>

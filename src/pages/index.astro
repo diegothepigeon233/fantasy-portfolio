@@ -1,0 +1,96 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { getLeagues, getSeasons, percentile, bestSeason, groupByCategory } from '../lib/data';
+
+// Read at build time. If the workbook is malformed the build fails loudly here,
+// which is what we want — better than shipping a page full of blanks.
+const [leagues, seasons] = await Promise.all([getLeagues(), getSeasons()]);
+
+const bySlug = (slug: string) => seasons.filter((s) => s.league === slug);
+const trophies = seasons.filter((s) => s.highlight);
+const sections = groupByCategory(leagues);
+---
+
+<Layout title="Fantasy Portfolio">
+  <section class="mb-14">
+    <h1 class="text-4xl font-bold tracking-tight sm:text-5xl">
+      Fantasy Portfolio
+    </h1>
+    <p class="mt-3 text-lg text-muted">
+      <span class="font-cjk text-slate-200">蒂亚鸽</span> — every season, on record.
+    </p>
+  </section>
+
+  {
+    trophies.length > 0 && (
+      <section class="mb-14">
+        <h2 class="mb-4 text-xs font-semibold tracking-widest text-muted uppercase">Trophy case</h2>
+        <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {trophies.map((s) => (
+            <div class="rounded-xl border border-edge bg-panel p-5">
+              <div class="text-sm font-semibold text-sky-400">{s.result || 'Highlight'}</div>
+              <div class="mt-1 font-medium">{s.season}</div>
+              <div class="text-sm text-muted">
+                {leagues.find((l) => l.slug === s.league)?.name ?? s.league}
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+    )
+  }
+
+  {
+    leagues.length === 0 ? (
+      <p class="text-muted">
+        No leagues yet — add a row to the <code class="text-sky-400">leagues</code> sheet of the
+        workbook.
+      </p>
+    ) : (
+      sections.map(({ category, leagues: group }) => (
+        <section class="mb-12">
+          <div class="mb-4 flex items-center gap-4">
+            <h2 class="text-xs font-semibold tracking-widest text-muted uppercase">{category}</h2>
+            <span class="h-px flex-1 bg-edge" aria-hidden="true" />
+          </div>
+
+          <div class="grid gap-4 sm:grid-cols-2">
+            {group.map((league) => {
+              const rows = bySlug(league.slug);
+              const best = bestSeason(rows);
+
+              return (
+                <a
+                  href={`/leagues/${league.slug}`}
+                  class="group rounded-2xl border border-edge bg-panel p-6 transition hover:border-slate-500"
+                >
+                  <div class="flex items-center gap-3">
+                    <span
+                      class="h-2.5 w-2.5 rounded-full"
+                      style={`background:${league.accent}`}
+                      aria-hidden="true"
+                    />
+                    <h3 class="text-lg font-semibold group-hover:text-sky-300">{league.name}</h3>
+                  </div>
+                  <p class="mt-2 text-sm text-muted">{league.blurb || league.sport}</p>
+                  <dl class="mt-5 flex gap-8 text-sm">
+                    <div>
+                      <dt class="text-xs text-muted uppercase">Seasons</dt>
+                      <dd class="mt-0.5 font-semibold">{rows.length}</dd>
+                    </div>
+                    <div>
+                      <dt class="text-xs text-muted uppercase">Best finish</dt>
+                      <dd class="mt-0.5 font-semibold">
+                        {best ? `${percentile(best)} (${best.season})` : '—'}
+                      </dd>
+                    </div>
+                  </dl>
+                </a>
+              );
+            })}
+          </div>
+        </section>
+      ))
+    )
+  }
+</Layout>

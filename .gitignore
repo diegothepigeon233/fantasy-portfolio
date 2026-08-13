@@ -1,0 +1,23 @@
+# build output
+dist/
+.vercel/
+.astro/
+
+# dependencies
+node_modules/
+
+# environment variables — never commit these
+.env
+.env.production
+.env.local
+
+# machine-local Claude Code permissions — not shared
+.claude/settings.local.json
+
+# Excel lock files, created while a workbook is open
+~$*.xlsx
+
+# logs / os junk
+*.log
+.DS_Store
+Thumbs.db
