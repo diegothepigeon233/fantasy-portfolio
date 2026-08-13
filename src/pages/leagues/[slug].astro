@@ -1,17 +1,41 @@
 ---
 import Layout from '../../layouts/Layout.astro';
-import { getLeagues, getSeasons, percentile, commas, type League, type Season } from '../../lib/data';
+import {
+  getLeagues,
+  getSeasons,
+  getMiniLeagues,
+  miniLeaguesBySeason,
+  percentile,
+  commas,
+  type League,
+  type Season,
+  type MiniLeague,
+} from '../../lib/data';
 
 // One page per row of the `leagues` sheet, generated at build time.
 export async function getStaticPaths() {
-  const [leagues, seasons] = await Promise.all([getLeagues(), getSeasons()]);
+  const [leagues, seasons, minis] = await Promise.all([
+    getLeagues(),
+    getSeasons(),
+    getMiniLeagues(),
+  ]);
   return leagues.map((league) => ({
     params: { slug: league.slug },
-    props: { league, rows: seasons.filter((s) => s.league === league.slug) },
+    props: {
+      league,
+      rows: seasons.filter((s) => s.league === league.slug),
+      minis: minis.filter((m) => m.league === league.slug),
+    },
   }));
 }
 
-const { league, rows } = Astro.props as { league: League; rows: Season[] };
+const { league, rows, minis } = Astro.props as {
+  league: League;
+  rows: Season[];
+  minis: MiniLeague[];
+};
+
+const miniSeasons = miniLeaguesBySeason(minis);
 ---
 
 <Layout title={`${league.name} — Fantasy Portfolio`}>
@@ -81,6 +105,45 @@ const { league, rows } = Astro.props as { league: League; rows: Season[] };
           </article>
         ))}
       </div>
+    )
+  }
+
+  {
+    miniSeasons.length > 0 && (
+      <section class="mt-14">
+        <div class="mb-5 flex items-center gap-4">
+          <h2 class="text-xs font-semibold tracking-widest text-muted uppercase">
+            Private mini-leagues
+          </h2>
+          <span class="h-px flex-1 bg-edge" aria-hidden="true" />
+        </div>
+
+        {miniSeasons.map(({ season, entries }) => (
+          <div class="mb-7">
+            <h3 class="mb-3 text-sm font-semibold text-slate-400">{season}</h3>
+            <div class="grid gap-3 sm:grid-cols-2">
+              {entries.map((m) => (
+                <div class="rounded-xl border border-edge bg-panel p-5">
+                  <div class="flex flex-wrap items-baseline justify-between gap-2">
+                    <span class="font-medium">{m.host}</span>
+                    {m.result ? (
+                      <span class="rounded-full bg-slate-100/5 px-2.5 py-0.5 text-xs text-slate-300">
+                        {m.result}
+                      </span>
+                    ) : (
+                      <span class="rounded-full bg-sky-400/15 px-2.5 py-0.5 text-xs font-medium text-sky-300">
+                        In progress
+                      </span>
+                    )}
+                  </div>
+                  {m.format && <p class="mt-1 text-sm text-muted">{m.format}</p>}
+                  {m.teamName && <p class="mt-3 text-sm text-slate-300">{m.teamName}</p>}
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
+      </section>
     )
   }
 </Layout>

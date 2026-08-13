@@ -39,6 +39,16 @@ export type Season = {
   notes: string;
 };
 
+/** One row of the `private-mini-leagues` sheet — a private league with friends. */
+export type MiniLeague = {
+  league: string;
+  season: string;
+  host: string;
+  format: string;
+  teamName: string;
+  result: string;
+};
+
 /** Cells can hold strings, numbers, formulas or rich text — flatten them all. */
 function cellText(value: ExcelJS.CellValue): string {
   if (value == null) return '';
@@ -182,6 +192,40 @@ export async function getSeasons(): Promise<Season[]> {
       notes: r.notes ?? '',
     }))
     // Newest season first.
+    .sort((a, b) => b.season.localeCompare(a.season));
+}
+
+/**
+ * Private leagues with friends. This sheet is optional — if it isn't in the
+ * workbook the site just renders without those sections rather than failing.
+ */
+export async function getMiniLeagues(): Promise<MiniLeague[]> {
+  const workbook = await openWorkbook();
+  if (!workbook.getWorksheet('private-mini-leagues')) return [];
+
+  const rows = await readSheet(workbook, 'private-mini-leagues', 'league');
+  return rows
+    .filter((r) => r.league !== '')
+    .map((r) => ({
+      league: r.league.toLowerCase(),
+      season: r.season ?? '',
+      host: r.mini_league_host ?? '',
+      format: r.mini_league_format ?? '',
+      teamName: r.team_name ?? '',
+      result: r.mini_league_result ?? '',
+    }));
+}
+
+/** Groups a league's mini-leagues by season, newest first. */
+export function miniLeaguesBySeason(rows: MiniLeague[]): { season: string; entries: MiniLeague[] }[] {
+  const groups = new Map<string, MiniLeague[]>();
+  for (const row of rows) {
+    const existing = groups.get(row.season);
+    if (existing) existing.push(row);
+    else groups.set(row.season, [row]);
+  }
+  return [...groups]
+    .map(([season, entries]) => ({ season, entries }))
     .sort((a, b) => b.season.localeCompare(a.season));
 }
 

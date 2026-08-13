@@ -67,6 +67,21 @@ leave anything else blank and it renders as `—`, never as `0`.
 | `highlight` | `TRUE` pins the season to the homepage trophy case. |
 | `notes` | Free text — a sentence on how the season went. |
 
+### Sheet: `private-mini-leagues` (optional)
+
+Private leagues with friends. These render in their own section at the bottom
+of the relevant league page, grouped by season. The sheet is optional — delete
+it and the site just builds without those sections.
+
+| Column | Notes |
+|---|---|
+| `league` | **Required.** Must match a `slug` from the `leagues` sheet. |
+| `season` | e.g. `2026-27`. Doesn't need a matching row in `seasons`. |
+| `mini_league_host` | Who runs it, e.g. 企鹅联赛. |
+| `mini_league_format` | The ruleset, e.g. 队长vs, 无Big6. |
+| `team_name` | Your squad name in that mini-league. |
+| `mini_league_result` | How it ended. **Leave blank while it's ongoing** — blank shows a blue "In progress" badge instead. |
+
 > **On `pct_finish`:** that column is formatted as *text* on purpose. Excel
 > normally converts `6%` into the number `0.06`, which would display as
 > "Top 0.06%". The site defends against this too, but leave the column

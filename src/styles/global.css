@@ -5,7 +5,11 @@
   --color-panel: #10141f;
   --color-edge: #212636;
   --color-muted: #8b93a7;
-  --font-display: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  /* CJK families are appended so Chinese in the data renders with a proper
+     face instead of the browser's fallback. Latin glyphs still come from
+     Inter — the browser only reaches past it for characters Inter lacks. */
+  --font-display: 'Inter', ui-sans-serif, system-ui, 'PingFang SC', 'Microsoft YaHei',
+    'Noto Sans SC', sans-serif;
   /* Chinese glyphs fall back to whatever the OS ships, so 蒂亚鸽 renders
      properly on Windows, macOS and Android without loading a webfont. */
   --font-cjk: 'PingFang SC', 'Microsoft YaHei', 'Noto Sans SC', 'Source Han Sans SC',
