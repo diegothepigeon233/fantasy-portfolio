@@ -258,6 +258,19 @@ export function bestSeason(rows: Season[]): Season | null {
   return scored.reduce((a, b) => (b.pct < a.pct ? b : a)).s;
 }
 
+/**
+ * True if the text contains Chinese/Japanese/Korean characters.
+ *
+ * Used to pick heading styles: the uppercase + wide-tracking treatment that
+ * suits short Latin labels does nothing for CJK except stretch it out, and
+ * 12px is too small to read Chinese comfortably.
+ */
+export function hasCJK(text: string): boolean {
+  // CJK punctuation, the unified ideograph block, compatibility ideographs
+  // and full-width forms.
+  return /[\u3000-\u303f\u4e00-\u9fff\uf900-\ufaff\uff00-\uffef]/.test(text);
+}
+
 /** 1234567 -> "1,234,567" */
 export function commas(n: number | null): string {
   return n == null ? '—' : n.toLocaleString('en-GB');

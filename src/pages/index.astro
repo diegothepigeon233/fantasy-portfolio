@@ -1,6 +1,13 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import { getLeagues, getSeasons, percentile, bestSeason, groupByCategory } from '../lib/data';
+import {
+  getLeagues,
+  getSeasons,
+  percentile,
+  bestSeason,
+  groupByCategory,
+  hasCJK,
+} from '../lib/data';
 
 // Read at build time. If the workbook is malformed the build fails loudly here,
 // which is what we want — better than shipping a page full of blanks.
@@ -49,7 +56,14 @@ const sections = groupByCategory(leagues);
       sections.map(({ category, leagues: group }) => (
         <section class="mb-12">
           <div class="mb-4 flex items-center gap-4">
-            <h2 class="text-xs font-semibold tracking-widest text-muted uppercase">{category}</h2>
+            <h2
+              class:list={[
+                'font-semibold text-muted',
+                hasCJK(category) ? 'text-sm tracking-wide' : 'text-xs tracking-widest uppercase',
+              ]}
+            >
+              {category}
+            </h2>
             <span class="h-px flex-1 bg-edge" aria-hidden="true" />
           </div>
 
