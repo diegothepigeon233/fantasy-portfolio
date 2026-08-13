@@ -21,12 +21,10 @@ const { title, description = 'A running archive of my fantasy sports seasons.' }
   <body class="min-h-screen bg-ink text-slate-100">
     <header class="border-b border-edge">
       <nav class="mx-auto flex max-w-5xl items-center justify-between px-6 py-5">
-        <a href="/" class="flex items-center gap-3">
-          <span class="text-sm font-semibold tracking-widest uppercase">
-            Fantasy<span class="text-sky-400">Portfolio</span>
-          </span>
-          <span class="h-4 w-px bg-edge" aria-hidden="true"></span>
-          <span class="font-cjk text-base leading-none text-slate-300">蒂亚鸽</span>
+        <a href="/" class="flex items-baseline text-base font-semibold">
+          <span class="font-cjk">蒂亚鸽</span>
+          <span class="font-cjk text-sm text-muted">の</span>
+          <span class="tracking-wide">Fantasy <span class="text-sky-400">Portfolio</span></span>
         </a>
         <a href="/" class="text-sm text-muted transition hover:text-slate-100">Leagues</a>
       </nav>
@@ -36,8 +34,6 @@ const { title, description = 'A running archive of my fantasy sports seasons.' }
       <slot />
     </main>
 
-    <footer class="mx-auto max-w-5xl px-6 py-12 text-xs text-muted">
-      Updated monthly from a spreadsheet kept in the repo.
-    </footer>
+    <div class="py-12"></div>
   </body>
 </html>
