@@ -57,10 +57,10 @@ const hasResults = (s: Season) =>
 
   {
     rows.length === 0 ? (
-      <p class="text-muted">
-        No seasons recorded yet. Add rows to the <code class="text-sky-400">seasons</code> sheet
-        with <code class="text-sky-400">league = {league.slug}</code>.
-      </p>
+      // Leagues like NBA and NFL have no official competition to record — only
+      // private leagues. Staying silent is right there; the placeholder only
+      // makes sense when the page would otherwise be completely empty.
+      minis.length === 0 && <p class="text-muted">Nothing recorded here yet.</p>
     ) : (
       <div class="space-y-4">
         {rows.map((s) => (

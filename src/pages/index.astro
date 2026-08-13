@@ -7,13 +7,19 @@ import {
   bestSeason,
   groupByCategory,
   hasCJK,
+  getMiniLeagues,
 } from '../lib/data';
 
 // Read at build time. If the workbook is malformed the build fails loudly here,
 // which is what we want — better than shipping a page full of blanks.
-const [leagues, seasons] = await Promise.all([getLeagues(), getSeasons()]);
+const [leagues, seasons, minis] = await Promise.all([
+  getLeagues(),
+  getSeasons(),
+  getMiniLeagues(),
+]);
 
 const bySlug = (slug: string) => seasons.filter((s) => s.league === slug);
+const minisBySlug = (slug: string) => minis.filter((m) => m.league === slug);
 const trophies = seasons.filter((s) => s.highlight);
 const sections = groupByCategory(leagues);
 ---
@@ -71,6 +77,9 @@ const sections = groupByCategory(leagues);
             {group.map((league) => {
               const rows = bySlug(league.slug);
               const best = bestSeason(rows);
+              // No official competition to record, only private leagues —
+              // "Seasons 0 / Best finish —" would read as missing data.
+              const miniOnly = rows.length === 0 && minisBySlug(league.slug).length > 0;
 
               return (
                 <a
@@ -87,16 +96,25 @@ const sections = groupByCategory(leagues);
                   </div>
                   <p class="mt-2 text-sm text-muted">{league.blurb || league.sport}</p>
                   <dl class="mt-5 flex gap-8 text-sm">
-                    <div>
-                      <dt class="text-xs text-muted uppercase">Seasons</dt>
-                      <dd class="mt-0.5 font-semibold">{rows.length}</dd>
-                    </div>
-                    <div>
-                      <dt class="text-xs text-muted uppercase">Best finish</dt>
-                      <dd class="mt-0.5 font-semibold">
-                        {best ? `${percentile(best)} (${best.season})` : '—'}
-                      </dd>
-                    </div>
+                    {miniOnly ? (
+                      <div>
+                        <dt class="text-xs text-muted uppercase">Mini-leagues</dt>
+                        <dd class="mt-0.5 font-semibold">{minisBySlug(league.slug).length}</dd>
+                      </div>
+                    ) : (
+                      <>
+                        <div>
+                          <dt class="text-xs text-muted uppercase">Seasons</dt>
+                          <dd class="mt-0.5 font-semibold">{rows.length}</dd>
+                        </div>
+                        <div>
+                          <dt class="text-xs text-muted uppercase">Best finish</dt>
+                          <dd class="mt-0.5 font-semibold">
+                            {best ? `${percentile(best)} (${best.season})` : '—'}
+                          </dd>
+                        </div>
+                      </>
+                    )}
                   </dl>
                 </a>
               );
